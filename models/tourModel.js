@@ -53,7 +53,9 @@ const tourSchema = new mongoose.Schema({
     createdAt: {
       type: Date,
       //Mongoose will convert the milliseconds to date
-      default: Date.now()
+      default: Date.now(),
+      //Never project in output
+      select: false
     },
     startDate: [Date]
   })

@@ -5,6 +5,9 @@ const router = express.Router();
 
 //router.param('id', tourController.checkID);
 
+//Aliasing
+router.route('/top-5-cheap-tours').get(tourController.aliasTopTours,tourController.getAllTours)
+
 router
   .route('/')
   .get(tourController.getAllTours)
