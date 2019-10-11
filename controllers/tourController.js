@@ -1,62 +1,24 @@
 const fs = require('fs');
 const Tour = require("./../models/tourModel")
+const APIFeatures = require("../utils/apiFeatures")
+
 
 exports.getAllTours = async (req, res) => {
   console.log(req.requestTime);
   console.log(req.query)
 
-  /* Removing restricted keys which are not actually query conditions */
-  let queryObject = {...req.query}
-  const excludedFields = ['page', 'sort', 'limit', 'fields']
-  excludedFields.forEach((currentField) => {
-    delete queryObject[currentField]
-  })
-
-  /* This steps are to add $ before any condition matcher like gte, etc. 
-  the query String is like ?duration[gte]=5&difficulty=easy */
-  let queryStr = JSON.stringify(queryObject)
-  queryStr = queryStr.replace(/\b(gte|lte|lt|gt)\b/g, match => `$${match}`)
-  queryObject = JSON.parse(queryStr)
-  console.log(queryObject)
-  
-  /* If we directly await here then we can't chain further methods, build query here     */
-  let query = Tour.find(queryObject)  
-
-  /* Sorting, sort=price -> sorts by the price field (default ascending), sort=-price(descending)
-  split multiple sort fields -> .sort({price ratingsAverage}) [the actual mongoose function] */
-  if(req.query.sort) {    
-    const sortBy = req.query.sort.split(',').join(' ')
-    query = query.sort(sortBy)
-  } else {
-    //default sort can be added
-    query = query.sort('-createdAt')
-  }
-
-  /* projection */
-  if(req.query.fields) {
-    const fields = req.query.fields.split(',').join(' ')
-    query = query.select(fields)
-  } else {
-    //Default, remove mongoose field
-    query.select('-__v')
-  }
-
-  /* pagination,?page=2&limit=10, get me page 2 and 10 results, that means skip first page. */
-  const page = parseInt(req.query.page) || 1
-  const limit = parseInt(req.query.limit) || 100
-  query = query.skip((page - 1)*limit).limit(limit)
-  if(req.query.page) {
-    const numTours = await Tour.countDocuments()
-    if(skip >= numTours)
-      throw new Error('No page exists')
-  }
-
-
-
   try {
-    /* const query = await Tour.find().where('duration').equals(5).where('difficulty').equals(5) */
     //execute query here
-    const tours = await query
+    const features = new APIFeatures(Tour.find(), req.query)
+
+    //Setup the query fields
+    features
+    .filter()
+    .sort()
+    .select()
+    .paginate()
+
+    const tours = await features.query
     res.status(200).json({
       status: 'success',
       requestedAt: req.requestTime,
@@ -154,10 +116,80 @@ exports.deleteTour = async (req, res) => {
 exports.aliasTopTours = async (req, res, next) => {
   req.query.limit = '5'
   req.query.sort = "-ratingsAverage,price"
-  req.query.fields = "name,price, ratingsAverage,summary,difficulty"
+  req.query.fields = "name,price,ratingsAverage,summary,difficulty"
   next()
 }
 
+exports.getTourStats = async (req, res) => {
+  try {
+    //.find returns a query object, .aggregate returns an aggregate object, when used with await it runs and returns result
+    const stats = await Tour.aggregate([
+      {
+        $match: { ratingsAverage: {$gte: 4.5} }
+      }, 
+      {
+        $group: {
+          //group by none here, so that means apply the accummulator over the complete set of docs
+          //_id: null,
+          _id: '$difficulty',
+          //_id: {$toUpper: '$difficulty'}
+          //For each of the document in this 'group' it's gonna add 1 to numOfTours counter
+          numOfTours: {$sum: 1},
+          numRatings: {$sum: '$ratingsQuantity'},
+          avgRating: {$avg: '$ratingsAverage'},
+          avgPrice: {$avg: '$price'},
+          minPrice: {$min: '$price'},
+          maxPrice: {$max: '$price'},
+        }
+      },
+      {
+        //you can only sort by the keys mentioned above as they would be the result document, 1 for ascending
+        $sort: { avgPrice: 1}
+      },
+      /* {
+        $match: {_id: {$ne: 'easy'}}
+      } */
+    ])
+
+    res.status(201).json({
+      status: 'success',
+      data: {
+        stats
+      }
+    });
+
+  } catch(err) {
+    console.log(err)
+    res.status(400).json({
+      status: 'fail',
+      message: err
+    })
+  }
+}
+
+exports.getMonthlyPlan = async (req, res) => {
+  try {
+    const year = parseInt(req.params.year)
+    const plan = Tour.aggregate([
+      
+    ])
+    res.status(201).json({
+      status: 'success',
+      data: {
+        plan
+      }
+    });
+  } catch(err) {
+    console.log(err)
+    res.status(400).json({
+      status: 'fail',
+      message: err
+    })
+  }
+}
+
+
+/* const query = await Tour.find().where('duration').equals(5).where('difficulty').equals(5) */
 
 /* const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
