@@ -19,7 +19,7 @@ exports.getAllTours = async (req, res) => {
     .paginate()
 
     const tours = await features.query
-    res.status(200).json({
+    res.status(201).json({
       status: 'success',
       requestedAt: req.requestTime,
       results: tours.length,
@@ -170,8 +170,39 @@ exports.getTourStats = async (req, res) => {
 exports.getMonthlyPlan = async (req, res) => {
   try {
     const year = parseInt(req.params.year)
-    const plan = Tour.aggregate([
-      
+    const plan = await Tour.aggregate([
+      {
+        $unwind: '$startDates'
+      },
+      {
+        $match: {
+          startDates: {
+            $gte: new Date(`${year}-01-01`),
+            $lte: new Date(`${year}-12-31`)
+          }
+        }
+      },
+      {
+        $group: {
+          _id: {$month: '$startDates'},
+          numOfTours: {$sum: 1},
+          tours: { $push: '$name'}
+        }
+      },
+      {
+        $addFields: { month: '$_id'}
+      },
+      {
+        $project: {
+          _id: 0
+        }
+      },
+      {
+        $sort: {numOfTours: -1}
+      },
+      {
+        $limit: 6
+      }
     ])
     res.status(201).json({
       status: 'success',
@@ -190,19 +221,3 @@ exports.getMonthlyPlan = async (req, res) => {
 
 
 /* const query = await Tour.find().where('duration').equals(5).where('difficulty').equals(5) */
-
-/* const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
-); */
-
-/* exports.checkID = (req, res, next, val) => {
-  console.log(`Tour id is: ${val}`);
-
-  if (req.params.id * 1 > tours.length) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID'
-    });
-  }
-  next();
-}; */
