@@ -15,6 +15,24 @@ mongoose.connect(DB, {
 })
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`App running on port ${port}...`);
 });
+
+//Node emits this event whenever there's an error which has not been handled anywhere, example - DB connnection fail
+process.on('unhandledRejection', err => {
+  console.log('UNHANDLED REJECTION!')
+  console.log(err.name, err.message)
+  server.close(() => {
+    process.exit(1)
+  })
+})
+
+//Should be declared at the top of the file
+process.on('uncaughtException', err => {
+  console.log('UNCAUGHT EXCEPTION!')
+  console.log(err.name, err.message)
+  server.close(() => {
+    process.exit(1)
+  })
+})
