@@ -1,5 +1,5 @@
 const catchAsync = require("./../utils/catchAsync")
-const APIFeatures = require("../utils/apiFeatures")
+const QueryBuilder = require("../utils/queryBuilder")
 const User = require("./../models/userModel")
 const AppError = require('./../utils/appError')
 const factory = require('./handlerFactory')

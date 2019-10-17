@@ -1,6 +1,6 @@
 const fs = require('fs');
 const Tour = require("./../models/tourModel")
-const APIFeatures = require("../utils/apiFeatures")
+const QueryBuilder = require("../utils/queryBuilder")
 const catchAsync = require("./../utils/catchAsync")
 const AppError = require('./../utils/appError')
 const factory = require('./handlerFactory')

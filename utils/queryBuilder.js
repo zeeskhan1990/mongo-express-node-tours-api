@@ -1,4 +1,4 @@
-class APIFeatures {
+class QueryBuilder {
     constructor(query, queryString) {
       this.queryString = queryString
       this.query = query
@@ -63,4 +63,4 @@ class APIFeatures {
     
    }
 
-   module.exports = APIFeatures
+   module.exports = QueryBuilder

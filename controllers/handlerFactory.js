@@ -1,6 +1,6 @@
 const catchAsync = require("./../utils/catchAsync")
 const AppError = require('./../utils/appError')
-const APIFeatures = require("../utils/apiFeatures")
+const QueryBuilder = require("../utils/queryBuilder")
 
 exports.deleteOne = Model => catchAsync(async (req, res, next) => {
     const doc = await Model.findByIdAndDelete(req.params.id)
@@ -63,16 +63,16 @@ exports.getAll = Model => catchAsync(async (req, res, next) => {
     console.log(req.requestTime);
     console.log(req.query)
       //execute query here
-      const features = new APIFeatures(Model.find(), req.query)
+      const builder = new QueryBuilder(Model.find(), req.query)
   
       //Setup the query fields
-      features
+      builder
       .filter()
       .sort()
       .select()
       .paginate()
   
-      const doc = await features.query
+      const doc = await builder.query
       res.status(201).json({
         status: 'success',
         requestedAt: req.requestTime,
