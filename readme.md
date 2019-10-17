@@ -1,29 +1,28 @@
----
-title: An exhaustive sample Express Mongo app
----
 
-**Use-Case:**
+# An exhaustive sample Express Mongo app 
 
-A set of api endpoints for a tour & travel agency. The main components of it
+## Use-Case:
+
+A set of api endpoints (documentation available [here](https://documenter.getpostman.com/view/270577/SVtZuktV?version=latest)) for a tour & travel agency. The main components of it
 are:
 
--   Users – People who would access the system:
+-   **Users** – People who would access the system:
 
-    -   Admin
+    -   _Admin_
 
-    -   Lead-Guide: The lead guide for a tour
+    -   _Lead-Guide_: The lead guide for a tour
 
-    -   Guide: The other guides assigned to a tour
+    -   _Guide_: The other guides assigned to a tour
 
-    -   Customer: The end users who would purchase the tour
+    -   _Customer_: The end users who would purchase the tour
 
--   Tours – The actual tour details
+-   **Tours** – The actual tour details
 
--   Reviews – The reviews posted by customers for a particular tour
+-   **Reviews** – The reviews posted by customers for a particular tour
 
 -   Bookings – TBD
 
-**Technologies/Libraries used:**
+## Technologies/Libraries used:
 
 -   Nodemon
 
@@ -40,7 +39,7 @@ are:
 
 -   Nodemailer
 
-**Features & Considerations:**
+## Features & Considerations:
 
 -   CRUD operations
 
